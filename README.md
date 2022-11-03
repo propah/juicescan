@@ -1,14 +1,5 @@
-# juicescan
+# Juicescan
+Juiscan uses multiples sets of tools such as Shodan.io or Crt.sh to retrieve information on a target.
+It's a simple cli tool that aims to be powerful and discreet.
 
-## Setup
-```sh
-# Install dependencies
-pipenv install --dev
-
-# Setup pre-commit and pre-push hooks
-pipenv run pre-commit install -t pre-commit
-pipenv run pre-commit install -t pre-push
-```
-
-## Credits
-This package was created with Cookiecutter and the [sourcery-ai/python-best-practices-cookiecutter](https://github.com/sourcery-ai/python-best-practices-cookiecutter) project template.
+TODO Add installation tutorial
