@@ -47,7 +47,7 @@ class Parser:
             "ipv4",
             metavar="ipv4",
             type=str,
-            help=colored("🎯 target's ipv4 address e.g 192.168.0.1", "grey"),
+            help=colored("🎯 target's ipv4 address (e.g 192.168.0.1)", "grey"),
         )
 
         self.parser.add_argument(
@@ -56,7 +56,7 @@ class Parser:
             type=str,
             action="store",
             help=colored(
-                "🎯 target's port(s), if none provided will scan all (0 < port < 65535)",
+                "🎯 target's port(s), if none provided will scan all. Range: -p 30-80 List: -p 80,443 (0 < port < 65535)",
                 "grey",
             ),
         )
@@ -67,7 +67,7 @@ class Parser:
             type=int,
             action="store",
             help=colored(
-                "🤖 amount of simultaneous connections on the target, default is 5 (0 < threads < 500)",
+                "🤖 amount of simultaneous connections on the target. Default: 5 (0 < threads < 500)",
                 "grey",
             ),
             default="5",
@@ -132,7 +132,7 @@ class Parser:
                     cprint("❌ Invalid port", "red", "on_yellow")
                     exit()
         if self.args.thread is not None:
-            if self.args.thread <= 0 or self.args.thread > 500:
+            if self.args.thread <= 0 or self.args.thread >= 500:
                 cprint(
                     f"❌ Invalid number of threads (0 < {self.args.thread} < 500) ",
                     "red",
