@@ -20,6 +20,7 @@ jobs:
       - name: Install dependencies with pipenv
         run: |
           pip install pipenv
+          pipenv lock
           pipenv install --deploy --dev
 
       - run: pipenv run isort --recursive --diff .
