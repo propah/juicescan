@@ -1,2 +1,2 @@
 def test() -> None:
-    pass
+    assert 1 == 1
