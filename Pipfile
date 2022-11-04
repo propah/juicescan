@@ -8,6 +8,7 @@ python_version = "3.10"
 
 [packages]
 termcolor = "*"
+alive-progress = "*"
 
 [dev-packages]
 flake8 = "*"
