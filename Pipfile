@@ -9,6 +9,8 @@ python_version = "3.10.8"
 [packages]
 termcolor = "*"
 alive-progress = "*"
+requests = "*"
+scapy = "*"
 
 [dev-packages]
 flake8 = "*"
@@ -18,3 +20,4 @@ pre-commit = "*"
 pytest = "*"
 pytest-cov = "*"
 black = "*"
+types-requests = "*"

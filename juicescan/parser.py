@@ -13,6 +13,11 @@ def is_valid_ip_address(ip_string) -> bool:
         return False
 
 
+class ScanType(Enum):
+    OPEN = 1
+    SYN = 2
+
+
 class PortType(Enum):
     LIST = 1
     RANGE = 2
@@ -26,6 +31,7 @@ class CommandInfo:
         self.threads: int = threads
         self.port_type: PortType = port_type
         self.ports: list[int] = ports
+        self.scan_type: ScanType = ScanType.SYN
 
     @classmethod
     def fromPortList(cls, ipv4: str, threads: int, ports: list[int]):
