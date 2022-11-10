@@ -4,10 +4,12 @@ from socket import AF_INET, SOCK_STREAM, socket
 
 import requests
 from alive_progress import alive_bar
-from scapy.all import IP, TCP, RandShort, sr  # type: ignore
+from scapy.all import IP, TCP, RandShort, sr, sr1  # type: ignore
 from termcolor import colored, cprint
 
 from juicescan.parser import CommandInfo, PortType, ScanType
+
+logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 
 class ManualPortAnalyzer:
@@ -16,6 +18,7 @@ class ManualPortAnalyzer:
         self.open_ports: dict[int, str] = {}
 
     def scan(self):
+        logging.disable(logging.CRITICAL)
         cprint(
             f"🔎 Scanning {self.command_info.ipv4}...",
             "white",
@@ -39,7 +42,6 @@ class ManualPortAnalyzer:
     def open_port_scan(self):
         total: int
         iterations: list[int] | range
-        scan_type_func: object
         match self.command_info.port_type:
             case PortType.LIST:
                 total = len(self.command_info.ports)
@@ -57,10 +59,9 @@ class ManualPortAnalyzer:
             bar.text = colored("😖 Juiced 0 port 😖")
             with ThreadPoolExecutor(max_workers=self.command_info.threads) as executor:
                 for port in iterations:
-                    executor.submit(self.is_port_open, port, bar)
+                    executor.submit(self._scan_port_open, port, bar)
 
-    def is_port_open(self, port: int, bar):
-        logging.disable(logging.CRITICAL)
+    def _scan_port_open(self, port: int, bar):
         try:
             sock = socket(AF_INET, SOCK_STREAM)
             sock.settimeout(3)
@@ -75,34 +76,69 @@ class ManualPortAnalyzer:
         bar()
 
     def syn_port_scan(self):
-        print("before x")
-        x = IP(dst=self.command_info.ipv4) / TCP(
-            sport=RandShort(),
-            dport=(self.command_info.ports[0], self.command_info.ports[1]),
-            flags="S",
-        )
-        print("after x")
         try:
             match self.command_info.port_type:
                 case PortType.RANGE:
-                    ans, unans = sr(x, timeout=2, retry=3, verbose=False)
+                    total: int
+                    iterations: list[int] | range
+                    match self.command_info.port_type:
+                        case PortType.LIST:
+                            total = len(self.command_info.ports)
+                            iterations = self.command_info.ports
+                        case PortType.RANGE:
+                            total = (
+                                self.command_info.ports[1] - self.command_info.ports[0]
+                            )
+                            iterations = range(
+                                self.command_info.ports[0], self.command_info.ports[1]
+                            )
+                    with alive_bar(
+                        total,
+                        enrich_print=False,
+                        dual_line=True,
+                    ) as bar:
+                        bar.text = colored("😖 Juiced 0 port 😖")
+                        with ThreadPoolExecutor(
+                            max_workers=self.command_info.threads
+                        ) as executor:
+                            for port in range(
+                                self.command_info.ports[0], self.command_info.ports[1]
+                            ):
+                                executor.submit(self._scan_port_syn, port, bar)
                 case PortType.LIST:
-                    ans, unans = sr(
+                    answers, _unans = sr(
                         IP(dst=self.command_info.ipv4)
                         / TCP(
                             sport=RandShort(), dport=self.command_info.ports, flags="S"
                         ),
-                        timeout=2,
-                        retry=3,
-                        verbose=False,
+                        timeout=1,
+                        verbose=True,
                     )
-            # ans.filter(lambda s,r: r.sprintf("%TCP.flags%") == "SA")
-            for res in ans:
-                if res[1][TCP].flags != "RA":
-                    self.open_ports.update({res[1][TCP].sport: ""})
+            # Reset connections
+            sr(
+                IP(dst=self.command_info.ipv4)
+                / TCP(dport=self.open_ports.keys(), flags="AR"),
+                timeout=1,
+            )
         except Exception as e:
             print(e)
             pass
+
+    def _scan_port_syn(self, port: int, bar):
+        sport = RandShort()
+        try:
+            answer = sr1(
+                IP(dst=self.command_info.ipv4)
+                / TCP(sport=sport, dport=port, flags="S"),
+                timeout=1,
+                verbose=False,
+            )
+            if answer[TCP].flags != "RA":
+                self.open_ports.update({port: ""})
+            bar.text = colored(f"💦 Juiced {len(self.open_ports)} ports 💦")
+        except Exception:
+            pass
+        bar()
 
 
 class ShodanPortAnalyzer:

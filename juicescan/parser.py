@@ -31,7 +31,7 @@ class CommandInfo:
         self.threads: int = threads
         self.port_type: PortType = port_type
         self.ports: list[int] = ports
-        self.scan_type: ScanType = ScanType.SYN
+        self.scan_type: ScanType = ScanType.OPEN
 
     @classmethod
     def fromPortList(cls, ipv4: str, threads: int, ports: list[int]):

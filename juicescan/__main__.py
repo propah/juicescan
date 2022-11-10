@@ -1,3 +1,5 @@
+import cProfile
+
 from juicescan.juicescan import ManualPortAnalyzer, ShodanPortAnalyzer
 from juicescan.parser import CommandInfo, Parser
 
