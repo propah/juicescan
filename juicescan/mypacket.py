@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 import scapy.all
 
 
+# flake8: noqa
 class TCPPacket:
     def __init__(self, src_host, src_port, dst_host, dst_port, flags=0):
         self.src_host = src_host
